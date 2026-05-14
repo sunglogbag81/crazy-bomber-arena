@@ -143,6 +143,7 @@ function addPlayerCore(room, id, name, bot) {
     maxBombs: 1,
     input: { up: false, down: false, left: false, right: false },
     lastBombAt: 0,
+    invulnerableUntil: 0,
     ai: bot ? { nextThink: 0, target: s, panicUntil: 0 } : null,
   };
   room.players.set(id, player);
@@ -209,33 +210,71 @@ function hasAdjacentCrate(room, x, y) {
   return [[1,0],[-1,0],[0,1],[0,-1]].some(([dx, dy]) => room.board[y + dy]?.[x + dx] === 'crate');
 }
 function distance(a, b) { return Math.abs(a.x - b.x) + Math.abs(a.y - b.y); }
+function openNeighbors(room, x, y, playerId) {
+  return [[0,-1,'up'], [0,1,'down'], [-1,0,'left'], [1,0,'right']]
+    .map(([dx, dy, key]) => ({ x: x + dx, y: y + dy, key }))
+    .filter(c => !isBlocked(room, c.x, c.y, playerId));
+}
+function wouldBeInBlast(room, bomb, x, y) {
+  return blastCells(room, bomb).some(c => c.x === x && c.y === y);
+}
+function botHasEscapeAfterBomb(room, bot, x, y) {
+  const simulatedBomb = { x, y, ownerId: bot.id, range: bot.range, explodeAt: Date.now() + BOMB_TIMER };
+  const queue = [{ x, y, depth: 0 }];
+  const seen = new Set([`${x},${y}`]);
+  while (queue.length) {
+    const cur = queue.shift();
+    if (cur.depth >= 2 && !wouldBeInBlast(room, simulatedBomb, cur.x, cur.y) && dangerAt(room, cur.x, cur.y) === 0) return true;
+    if (cur.depth >= 6) continue;
+    for (const n of openNeighbors(room, cur.x, cur.y, bot.id)) {
+      if (cur.depth > 0 && n.x === x && n.y === y) continue;
+      const key = `${n.x},${n.y}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      queue.push({ x: n.x, y: n.y, depth: cur.depth + 1 });
+    }
+  }
+  return false;
+}
+function safeRespawnSpot(room, preferredSlot = 0) {
+  const ordered = [spawns[preferredSlot], ...spawns].filter(Boolean);
+  for (const s of ordered) if (room.board[s.y]?.[s.x] === 'floor' && dangerAt(room, s.x, s.y) === 0) return s;
+  for (let y = 1; y < ROWS - 1; y++) for (let x = 1; x < COLS - 1; x++) {
+    if (room.board[y][x] === 'floor' && dangerAt(room, x, y) === 0) return { x, y };
+  }
+  return spawns[preferredSlot] || spawns[0];
+}
 function updateBot(room, bot) {
   const now = Date.now();
   const t = playerTile(bot);
-  if (now < bot.ai.nextThink) return;
-  bot.ai.nextThink = now + 260 + Math.random() * 420;
+  const urgent = dangerAt(room, ...Object.values(playerTile(bot))) > 0;
+  if (now < bot.ai.nextThink && !urgent) return;
+  bot.ai.nextThink = now + (urgent ? 80 : 260 + Math.random() * 420);
 
-  const choices = [[0,-1,'up'], [0,1,'down'], [-1,0,'left'], [1,0,'right']]
-    .map(([dx, dy, key]) => ({ x: t.x + dx, y: t.y + dy, key }))
-    .filter(c => !isBlocked(room, c.x, c.y, bot.id));
+  const choices = openNeighbors(room, t.x, t.y, bot.id);
   bot.input = { up: false, down: false, left: false, right: false };
   if (choices.length === 0) return;
+  const safeChoices = choices.filter(c => dangerAt(room, c.x, c.y) === 0);
 
   const humans = [...room.players.values()].filter(p => !p.bot && p.alive).map(playerTile);
   const immediateDanger = dangerAt(room, t.x, t.y);
   let target;
   if (immediateDanger) {
-    target = choices.sort((a, b) => dangerAt(room, a.x, a.y) - dangerAt(room, b.x, b.y))[0];
+    target = choices
+      .sort((a, b) => (dangerAt(room, a.x, a.y) - dangerAt(room, b.x, b.y)) || (Math.random() - 0.5))[0];
   } else if (humans.length && Math.random() < 0.55) {
     const human = humans.sort((a, b) => distance(t, a) - distance(t, b))[0];
-    target = choices.sort((a, b) => distance(a, human) - distance(b, human))[0];
+    const pool = safeChoices.length ? safeChoices : choices;
+    target = pool.sort((a, b) => distance(a, human) - distance(b, human))[0];
   } else {
-    target = choices[Math.floor(Math.random() * choices.length)];
+    const pool = safeChoices.length ? safeChoices : choices;
+    target = pool[Math.floor(Math.random() * pool.length)];
   }
   if (target) bot.input[target.key] = true;
 
   const nearEnemy = [...room.players.values()].some(p => p.id !== bot.id && p.alive && distance(t, playerTile(p)) <= 2);
-  if (!immediateDanger && (hasAdjacentCrate(room, t.x, t.y) || nearEnemy) && Math.random() < 0.45) placeBomb(room, bot);
+  const safeToBomb = dangerAt(room, t.x, t.y) === 0 && botHasEscapeAfterBomb(room, bot, t.x, t.y);
+  if (safeToBomb && (hasAdjacentCrate(room, t.x, t.y) || nearEnemy) && Math.random() < 0.18) placeBomb(room, bot);
 }
 
 function tickRoom(room) {
@@ -265,11 +304,12 @@ function tickRoom(room) {
   for (const player of room.players.values()) {
     if (!player.alive) continue;
     const t = playerTile(player);
-    if (room.blasts.some(b => b.x === t.x && b.y === t.y)) {
+    if (now > player.invulnerableUntil && room.blasts.some(b => b.x === t.x && b.y === t.y)) {
       player.hp -= 1;
       player.alive = player.hp > 0;
+      player.invulnerableUntil = now + 1100;
       if (player.alive) {
-        const s = spawns[player.slot];
+        const s = safeRespawnSpot(room, player.slot);
         player.px = centerOf(s.x);
         player.py = centerOf(s.y);
       }
@@ -296,6 +336,7 @@ function resetRound(room) {
     player.hp = 3;
     player.alive = true;
     player.input = { up: false, down: false, left: false, right: false };
+    player.invulnerableUntil = Date.now() + 900;
     if (player.bot) player.ai = { nextThink: 0, target: s, panicUntil: 0 };
   }
   room.status = room.players.size >= 2 ? 'playing' : 'waiting';
