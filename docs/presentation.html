@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crazy Bomber Arena 발표자료</title>
+  <style>
+    @page { size: A4; margin: 0; }
+    * { box-sizing: border-box; }
+    :root {
+      --ink: #141827;
+      --muted: #5b6275;
+      --blue: #2f80ff;
+      --cyan: #21c8ff;
+      --pink: #ff4f9a;
+      --yellow: #ffd23f;
+      --green: #37d67a;
+      --paper: #ffffff;
+      --soft: #f4f7fb;
+      --line: #e4e9f2;
+      --dark: #101425;
+    }
+    body {
+      margin: 0;
+      background: #dfe5ef;
+      color: var(--ink);
+      font-family: Pretendard, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.48;
+    }
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto 16px;
+      padding: 18mm;
+      background: var(--paper);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 18px 60px rgba(20,24,39,.16);
+      page-break-after: always;
+    }
+    .page:last-child { page-break-after: auto; }
+    .cover {
+      color: white;
+      background:
+        radial-gradient(circle at 16% 18%, rgba(33,200,255,.34), transparent 34%),
+        radial-gradient(circle at 86% 12%, rgba(255,79,154,.32), transparent 30%),
+        linear-gradient(135deg, #101425 0%, #191637 54%, #06273d 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .grid-bg::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.055) 1px, transparent 1px);
+      background-size: 13mm 13mm;
+      mask-image: linear-gradient(to bottom, black, transparent 80%);
+      pointer-events: none;
+    }
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      padding: 7px 12px;
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 999px;
+      background: rgba(255,255,255,.10);
+      color: inherit;
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: .08em;
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      font-size: 62px;
+      line-height: .96;
+      letter-spacing: -0.055em;
+      margin: 20mm 0 8mm;
+    }
+    h1 span { color: var(--yellow); }
+    .subtitle {
+      font-size: 21px;
+      color: rgba(255,255,255,.78);
+      max-width: 142mm;
+      margin-bottom: 0;
+    }
+    .cover-card {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      position: relative;
+      z-index: 1;
+    }
+    .mini {
+      padding: 14px;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 20px;
+      background: rgba(255,255,255,.10);
+      backdrop-filter: blur(10px);
+    }
+    .mini strong { display: block; font-size: 18px; margin-bottom: 3px; }
+    .mini span { color: rgba(255,255,255,.72); font-size: 13px; }
+    .bomb {
+      position: absolute;
+      right: 22mm;
+      top: 66mm;
+      width: 42mm;
+      height: 42mm;
+      border-radius: 50%;
+      background: radial-gradient(circle at 32% 24%, #ffffff, #3e4767 22%, #070914 66%);
+      box-shadow: 0 24px 70px rgba(0,0,0,.45);
+    }
+    .bomb::before {
+      content: "";
+      position: absolute;
+      right: 2mm;
+      top: -5mm;
+      width: 15mm;
+      height: 7mm;
+      border-radius: 999px;
+      background: var(--yellow);
+      transform: rotate(22deg);
+    }
+    .page-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 12mm;
+    }
+    .tag {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #edf7ff;
+      color: #1260c9;
+      font-weight: 850;
+      font-size: 12px;
+    }
+    h2 {
+      font-size: 34px;
+      line-height: 1.1;
+      letter-spacing: -0.035em;
+      margin-bottom: 6mm;
+    }
+    h3 {
+      font-size: 18px;
+      margin-bottom: 3mm;
+    }
+    .lead {
+      color: var(--muted);
+      font-size: 17px;
+      margin-bottom: 9mm;
+    }
+    .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+    .card {
+      padding: 7mm;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: linear-gradient(180deg, #fff, var(--soft));
+    }
+    .card.full { grid-column: 1 / -1; }
+    .icon {
+      display: grid;
+      place-items: center;
+      width: 12mm;
+      height: 12mm;
+      margin-bottom: 4mm;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      color: white;
+      font-size: 22px;
+      font-weight: 900;
+    }
+    ul { margin: 0; padding-left: 20px; }
+    li { margin: 6px 0; }
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4mm;
+      margin-top: 8mm;
+    }
+    .step {
+      position: relative;
+      padding: 6mm 4mm;
+      min-height: 34mm;
+      border-radius: 18px;
+      background: var(--dark);
+      color: white;
+    }
+    .step b {
+      display: inline-grid;
+      place-items: center;
+      width: 9mm;
+      height: 9mm;
+      margin-bottom: 4mm;
+      border-radius: 50%;
+      background: var(--yellow);
+      color: var(--dark);
+    }
+    .step p { color: rgba(255,255,255,.76); margin: 0; font-size: 13px; }
+    .demo-box {
+      border-radius: 26px;
+      overflow: hidden;
+      background: #11172b;
+      border: 1px solid #26324d;
+      box-shadow: 0 18px 50px rgba(17,23,43,.23);
+    }
+    .demo-top {
+      display: flex;
+      gap: 6px;
+      padding: 12px 15px;
+      background: #1a2238;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--pink); }
+    .dot:nth-child(2) { background: var(--yellow); }
+    .dot:nth-child(3) { background: var(--green); }
+    .arena {
+      display: grid;
+      grid-template-columns: repeat(11, 1fr);
+      gap: 3px;
+      padding: 14px;
+    }
+    .tile { aspect-ratio: 1; border-radius: 5px; background: #203a63; }
+    .tile:nth-child(odd) { background: #27456f; }
+    .wall { background: #7282aa !important; }
+    .box { background: #c6813f !important; }
+    .player { background: var(--cyan) !important; border-radius: 50%; box-shadow: 0 0 0 3px white inset; }
+    .enemy { background: var(--pink) !important; border-radius: 50%; }
+    .boom { background: var(--yellow) !important; box-shadow: 0 0 16px #ff8c3f; }
+    .code-line {
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 13px;
+      padding: 4mm;
+      border-radius: 14px;
+      background: #101425;
+      color: #cfe8ff;
+      margin-top: 4mm;
+    }
+    .two-col { display: grid; grid-template-columns: 1.05fr .95fr; gap: 8mm; align-items: start; }
+    .footer {
+      position: absolute;
+      left: 18mm;
+      right: 18mm;
+      bottom: 10mm;
+      display: flex;
+      justify-content: space-between;
+      color: #9aa2b5;
+      font-size: 11px;
+    }
+    .qr-placeholder {
+      display: grid;
+      place-items: center;
+      height: 44mm;
+      border: 2px dashed #cfd7e6;
+      border-radius: 18px;
+      color: #7a8499;
+      text-align: center;
+      font-weight: 800;
+    }
+    .big-link {
+      padding: 7mm;
+      border-radius: 22px;
+      background: linear-gradient(135deg, #edf7ff, #fff8dc);
+      border: 1px solid var(--line);
+      font-size: 18px;
+      font-weight: 900;
+      word-break: break-all;
+    }
+    @media print {
+      body { background: white; }
+      .page { margin: 0; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <section class="page cover grid-bg">
+    <div>
+      <div class="kicker">💣 CODING CLUB PROJECT</div>
+      <h1><span>Crazy</span><br>Bomber Arena</h1>
+      <p class="subtitle">크레이지 아케이드에서 영감을 받은 실시간 온라인 폭탄 대전 웹게임</p>
+    </div>
+    <div class="bomb"></div>
+    <div class="cover-card">
+      <div class="mini"><strong>실시간 대전</strong><span>Socket.IO 기반 방 코드 플레이</span></div>
+      <div class="mini"><strong>솔로 테스트</strong><span>AI 봇과 바로 시연 가능</span></div>
+      <div class="mini"><strong>웹 배포</strong><span>Node.js 서버 하나로 실행</span></div>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="page-head"><span class="tag">01 / WHY</span><span>Crazy Bomber Arena</span></div>
+    <h2>왜 이 프로젝트를 만들었나?</h2>
+    <p class="lead">발표용 프로젝트는 “보는 순간 이해되고, 직접 해보고 싶고, 기술 설명도 가능한 것”이 가장 강합니다.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="icon">🎮</div>
+        <h3>게임이라 즉시 몰입된다</h3>
+        <p>복잡한 설명 없이도 이동, 폭탄, 폭발, 승리라는 규칙을 바로 이해할 수 있습니다.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🌐</div>
+        <h3>온라인 대전으로 임팩트가 있다</h3>
+        <p>방 코드를 공유하면 여러 사람이 같은 게임 상태를 실시간으로 봅니다.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🤖</div>
+        <h3>혼자서도 시연 가능하다</h3>
+        <p>발표 중 네트워크나 인원 문제가 생겨도 봇과 솔로 테스트를 진행할 수 있습니다.</p>
+      </div>
+      <div class="card">
+        <div class="icon">⚙️</div>
+        <h3>기술 설명이 깔끔하다</h3>
+        <p>클라이언트, 서버, 실시간 통신, 게임 루프를 한 프로젝트 안에서 설명할 수 있습니다.</p>
+      </div>
+    </div>
+    <div class="footer"><span>발표자료</span><span>1</span></div>
+  </section>
+
+  <section class="page">
+    <div class="page-head"><span class="tag">02 / GAME</span><span>Core Gameplay</span></div>
+    <h2>게임 규칙</h2>
+    <p class="lead">목표는 간단합니다. 폭탄을 설치하고, 블록을 부수고, 상대의 체력을 먼저 0으로 만들면 승리합니다.</p>
+    <div class="two-col">
+      <div class="demo-box">
+        <div class="demo-top"><i class="dot"></i><i class="dot"></i><i class="dot"></i></div>
+        <div class="arena">
+          <i class="tile wall"></i><i class="tile wall"></i><i class="tile wall"></i><i class="tile wall"></i><i class="tile wall"></i><i class="tile wall"></i><i class="tile wall"></i><i class="tile wall"></i><i class="tile wall"></i><i class="tile wall"></i><i class="tile wall"></i>
+          <i class="tile wall"></i><i class="tile player"></i><i class="tile"></i><i class="tile box"></i><i class="tile"></i><i class="tile"></i><i class="tile box"></i><i class="tile"></i><i class="tile"></i><i class="tile enemy"></i><i class="tile wall"></i>
+          <i class="tile wall"></i><i class="tile"></i><i class="tile wall"></i><i class="tile"></i><i class="tile wall"></i><i class="tile"></i><i class="tile wall"></i><i class="tile"></i><i class="tile wall"></i><i class="tile"></i><i class="tile wall"></i>
+          <i class="tile wall"></i><i class="tile box"></i><i class="tile"></i><i class="tile boom"></i><i class="tile boom"></i><i class="tile boom"></i><i class="tile"></i><i class="tile box"></i><i class="tile"></i><i class="tile"></i><i class="tile wall"></i>
+          <i class="tile wall"></i><i class="tile"></i><i class="tile wall"></i><i class="tile"></i><i class="tile wall"></i><i class="tile"></i><i class="tile wall"></i><i class="tile"></i><i class="tile wall"></i><i class="tile"></i><i class="tile wall"></i>
+          <i class="tile wall"></i><i class="tile"></i><i class="tile box"></i><i class="tile"></i><i class="tile"></i><i class="tile"></i><i class="tile box"></i><i class="tile"></i><i class="tile"></i><i class="tile"></i><i class="tile wall"></i>
+          <i class="tile wall"></i><i class="tile wall"></i><i class="tile wall"></i><i class="tile wall"></i><i class="tile wall"></i><i class="tile wall"></i><i class="tile wall"></i><i class="tile wall"></i><i class="tile wall"></i><i class="tile wall"></i><i class="tile wall"></i>
+        </div>
+      </div>
+      <div class="cards" style="grid-template-columns:1fr">
+        <div class="card"><h3>조작</h3><ul><li>WASD 또는 방향키로 이동</li><li>Space로 폭탄 설치</li><li>모바일은 화면 버튼 지원</li></ul></div>
+        <div class="card"><h3>승리 조건</h3><ul><li>폭발에 맞으면 체력 감소</li><li>마지막까지 살아남으면 승리</li><li>라운드 종료 후 자동 재시작</li></ul></div>
+      </div>
+    </div>
+    <div class="footer"><span>발표자료</span><span>2</span></div>
+  </section>
+
+  <section class="page">
+    <div class="page-head"><span class="tag">03 / TECH</span><span>Architecture</span></div>
+    <h2>기술 구조</h2>
+    <p class="lead">핵심은 서버가 게임 상태를 관리하고, 클라이언트는 입력만 보내는 구조입니다.</p>
+    <div class="flow">
+      <div class="step"><b>1</b><h3>입력</h3><p>플레이어가 이동키나 폭탄 키를 누릅니다.</p></div>
+      <div class="step"><b>2</b><h3>전송</h3><p>클라이언트가 Socket.IO로 입력을 서버에 보냅니다.</p></div>
+      <div class="step"><b>3</b><h3>계산</h3><p>서버가 이동, 충돌, 폭발, 승패를 계산합니다.</p></div>
+      <div class="step"><b>4</b><h3>동기화</h3><p>서버가 모든 플레이어에게 최신 상태를 전송합니다.</p></div>
+    </div>
+    <div class="card full" style="margin-top:8mm">
+      <h3>서버 중심 구조를 선택한 이유</h3>
+      <ul>
+        <li>모든 플레이어가 같은 게임 상태를 보게 만들기 쉽습니다.</li>
+        <li>폭탄/폭발/승패 판정을 한 곳에서 처리해 버그를 줄입니다.</li>
+        <li>나중에 랭킹, 방 목록, 아이템 같은 기능을 확장하기 좋습니다.</li>
+      </ul>
+      <div class="code-line">client input → server game loop → broadcast state → canvas render</div>
+    </div>
+    <div class="footer"><span>발표자료</span><span>3</span></div>
+  </section>
+
+  <section class="page">
+    <div class="page-head"><span class="tag">04 / FEATURES</span><span>Implemented</span></div>
+    <h2>구현 기능</h2>
+    <p class="lead">발표 시연에 필요한 핵심 기능은 모두 들어가 있습니다.</p>
+    <div class="cards">
+      <div class="card"><div class="icon">🏠</div><h3>방 코드 시스템</h3><p>방을 만들면 4자리 코드가 생성되고, 친구는 코드로 바로 입장합니다.</p></div>
+      <div class="card"><div class="icon">💥</div><h3>폭탄과 폭발</h3><p>폭탄 타이머, 십자 폭발, 블록 파괴, 연쇄 폭발을 구현했습니다.</p></div>
+      <div class="card"><div class="icon">🧱</div><h3>맵과 충돌</h3><p>고정 벽, 파괴 가능한 박스, 플레이어 이동 충돌을 서버에서 판정합니다.</p></div>
+      <div class="card"><div class="icon">🤖</div><h3>AI 봇</h3><p>솔로 테스트용 봇이 이동하고, 위험 지역을 피하고, 안전할 때 폭탄을 설치합니다.</p></div>
+      <div class="card"><div class="icon">📱</div><h3>모바일 조작</h3><p>스마트폰에서도 방향 버튼과 폭탄 버튼으로 시연할 수 있습니다.</p></div>
+      <div class="card"><div class="icon">🚀</div><h3>배포 준비</h3><p>Node.js 서버, Dockerfile, Render 설정, 헬스체크 엔드포인트를 포함했습니다.</p></div>
+    </div>
+    <div class="footer"><span>발표자료</span><span>4</span></div>
+  </section>
+
+  <section class="page">
+    <div class="page-head"><span class="tag">05 / DEMO</span><span>How to Present</span></div>
+    <h2>시연 순서</h2>
+    <p class="lead">발표 때는 아래 흐름대로 하면 자연스럽고 안정적입니다.</p>
+    <div class="cards">
+      <div class="card full"><h3>추천 시연 루틴</h3><ol><li>게임 페이지를 열고 로비 디자인을 보여줍니다.</li><li><b>솔로 테스트</b>를 눌러 봇과 즉시 플레이합니다.</li><li>폭탄 설치, 블록 파괴, 체력 감소를 보여줍니다.</li><li>다른 브라우저나 친구 휴대폰으로 방 코드 입장을 보여줍니다.</li><li>마지막으로 서버 구조와 Socket.IO 동기화 방식을 설명합니다.</li></ol></div>
+      <div class="card"><h3>발표 멘트 예시</h3><p>“이 게임은 클라이언트가 직접 판정하지 않고, 서버가 모든 게임 상태를 계산합니다. 그래서 여러 명이 접속해도 같은 맵과 같은 폭발을 보게 됩니다.”</p></div>
+      <div class="card"><h3>비상 플랜</h3><p>인터넷이나 친구 접속이 불안하면 솔로 테스트 모드로도 전체 게임 흐름을 보여줄 수 있습니다.</p></div>
+    </div>
+    <div class="footer"><span>발표자료</span><span>5</span></div>
+  </section>
+
+  <section class="page">
+    <div class="page-head"><span class="tag">06 / ACCESS</span><span>Play Link</span></div>
+    <h2>접속 방법</h2>
+    <p class="lead">발표 직전에 실제 도메인 또는 서버 IP를 아래 칸에 넣고 PDF로 저장하면 됩니다.</p>
+    <div class="two-col">
+      <div>
+        <h3>게임 주소</h3>
+        <div class="big-link">http://도메인또는서버IP:3000</div>
+        <br>
+        <h3>참여 방법</h3>
+        <ul><li>발표자가 “온라인 방 만들기” 클릭</li><li>생성된 방 코드를 친구들에게 공유</li><li>친구들은 같은 URL에서 방 코드로 입장</li></ul>
+      </div>
+      <div>
+        <h3>QR 코드 자리</h3>
+        <div class="qr-placeholder">여기에 QR 코드 이미지를<br>넣으면 완성</div>
+      </div>
+    </div>
+    <div class="card full" style="margin-top:10mm"><h3>GitHub</h3><p style="margin-bottom:0;font-weight:900;word-break:break-all">https://github.com/sunglogbag81/crazy-bomber-arena</p></div>
+    <div class="footer"><span>발표자료</span><span>6</span></div>
+  </section>
+</body>
+</html>

@@ -2,3 +2,5 @@ node_modules/
 npm-debug.log*
 .DS_Store
 .env
+crazy-bomber-arena.log
+crazy-bomber-arena.pid
