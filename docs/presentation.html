@@ -369,55 +369,82 @@
   </div>
 
   <script>
-    const slides = document.getElementById('slides');
-    const slideItems = Array.from(document.querySelectorAll('.slide'));
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const counter = document.getElementById('counter');
-    const progressBar = document.getElementById('progressBar');
-    const dots = document.getElementById('dots');
-    let currentIndex = 0;
+    (() => {
+      const slides = document.getElementById('slides');
+      const slideItems = Array.from(document.querySelectorAll('.slide'));
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const counter = document.getElementById('counter');
+      const progressBar = document.getElementById('progressBar');
+      const dots = document.getElementById('dots');
+      let currentIndex = 0;
 
-    const arena = document.getElementById('arenaMock');
-    if (arena) {
-      const special = new Map([[0,'wall'],[1,'wall'],[2,'wall'],[3,'wall'],[4,'wall'],[5,'wall'],[6,'wall'],[7,'wall'],[8,'wall'],[9,'wall'],[10,'wall'],[11,'wall'],[12,'wall'],[13,'wall'],[25,'wall'],[26,'wall'],[38,'wall'],[39,'wall'],[51,'wall'],[52,'wall'],[64,'wall'],[65,'wall'],[77,'wall'],[78,'wall'],[90,'wall'],[91,'wall'],[92,'wall'],[93,'wall'],[94,'wall'],[95,'wall'],[96,'wall'],[97,'wall'],[98,'wall'],[99,'wall'],[100,'wall'],[101,'wall'],[102,'wall'],[103,'wall'],[104,'wall'],[14,'player'],[24,'enemy'],[17,'box'],[20,'box'],[40,'box'],[47,'box'],[55,'boom'],[56,'boom'],[57,'boom'],[58,'boom'],[72,'box']]);
-      for (let i = 0; i < 105; i++) {
-        const cell = document.createElement('i');
-        cell.className = `tile ${special.get(i) || ''}`;
-        arena.appendChild(cell);
+      const arena = document.getElementById('arenaMock');
+      if (arena && arena.children.length === 0) {
+        const special = new Map([[0,'wall'],[1,'wall'],[2,'wall'],[3,'wall'],[4,'wall'],[5,'wall'],[6,'wall'],[7,'wall'],[8,'wall'],[9,'wall'],[10,'wall'],[11,'wall'],[12,'wall'],[13,'wall'],[25,'wall'],[26,'wall'],[38,'wall'],[39,'wall'],[51,'wall'],[52,'wall'],[64,'wall'],[65,'wall'],[77,'wall'],[78,'wall'],[90,'wall'],[91,'wall'],[92,'wall'],[93,'wall'],[94,'wall'],[95,'wall'],[96,'wall'],[97,'wall'],[98,'wall'],[99,'wall'],[100,'wall'],[101,'wall'],[102,'wall'],[103,'wall'],[104,'wall'],[14,'player'],[24,'enemy'],[17,'box'],[20,'box'],[40,'box'],[47,'box'],[55,'boom'],[56,'boom'],[57,'boom'],[58,'boom'],[72,'box']]);
+        for (let i = 0; i < 105; i++) {
+          const cell = document.createElement('i');
+          cell.className = `tile ${special.get(i) || ''}`;
+          arena.appendChild(cell);
+        }
       }
-    }
 
-    slideItems.forEach((_, index) => {
-      const dot = document.createElement('button');
-      dot.className = 'dot';
-      dot.type = 'button';
-      dot.ariaLabel = `${index + 1}번 슬라이드`;
-      dot.addEventListener('click', () => goToSlide(index));
-      dots.appendChild(dot);
-    });
-    function updateUI() {
-      slides.style.transform = `translateX(-${currentIndex * 100}%)`;
-      counter.textContent = `${currentIndex + 1} / ${slideItems.length}`;
-      progressBar.style.width = `${((currentIndex + 1) / slideItems.length) * 100}%`;
-      prevBtn.disabled = currentIndex === 0;
-      nextBtn.disabled = currentIndex === slideItems.length - 1;
-      Array.from(dots.children).forEach((dot, index) => dot.classList.toggle('active', index === currentIndex));
-    }
-    function goToSlide(index) {
-      currentIndex = Math.max(0, Math.min(index, slideItems.length - 1));
+      function goToSlide(index) {
+        currentIndex = Math.max(0, Math.min(index, slideItems.length - 1));
+        updateUI();
+      }
+      function updateUI() {
+        slides.style.transform = `translate3d(-${currentIndex * 100}%, 0, 0)`;
+        counter.textContent = `${currentIndex + 1} / ${slideItems.length}`;
+        progressBar.style.width = `${((currentIndex + 1) / slideItems.length) * 100}%`;
+        prevBtn.disabled = currentIndex === 0;
+        nextBtn.disabled = currentIndex === slideItems.length - 1;
+        Array.from(dots.children).forEach((dot, index) => dot.classList.toggle('active', index === currentIndex));
+      }
+
+      dots.innerHTML = '';
+      slideItems.forEach((_, index) => {
+        const dot = document.createElement('button');
+        dot.className = 'dot';
+        dot.type = 'button';
+        dot.ariaLabel = `${index + 1}번 슬라이드`;
+        dot.addEventListener('click', (event) => {
+          event.preventDefault();
+          goToSlide(index);
+        });
+        dots.appendChild(dot);
+      });
+
+      prevBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        goToSlide(currentIndex - 1);
+      });
+      nextBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        goToSlide(currentIndex + 1);
+      });
+
+      document.addEventListener('keydown', (event) => {
+        const tag = event.target?.tagName?.toLowerCase();
+        if (tag === 'input' || tag === 'textarea' || tag === 'select' || event.target?.isContentEditable) return;
+        if (event.key === 'ArrowRight' || event.key === 'PageDown' || event.key === ' ') {
+          event.preventDefault();
+          goToSlide(currentIndex + 1);
+        } else if (event.key === 'ArrowLeft' || event.key === 'PageUp') {
+          event.preventDefault();
+          goToSlide(currentIndex - 1);
+        } else if (event.key === 'Home') {
+          event.preventDefault();
+          goToSlide(0);
+        } else if (event.key === 'End') {
+          event.preventDefault();
+          goToSlide(slideItems.length - 1);
+        }
+      }, { capture: true });
+
+      window.goToSlide = goToSlide;
       updateUI();
-    }
-    prevBtn.addEventListener('click', () => goToSlide(currentIndex - 1));
-    nextBtn.addEventListener('click', () => goToSlide(currentIndex + 1));
-    window.addEventListener('keydown', (event) => {
-      if (window.innerWidth <= 1200) return;
-      if (event.key === 'ArrowRight' || event.key === 'PageDown' || event.key === ' ') { event.preventDefault(); goToSlide(currentIndex + 1); }
-      if (event.key === 'ArrowLeft' || event.key === 'PageUp') { event.preventDefault(); goToSlide(currentIndex - 1); }
-      if (event.key === 'Home') goToSlide(0);
-      if (event.key === 'End') goToSlide(slideItems.length - 1);
-    });
-    updateUI();
+    })();
   </script>
 </body>
 </html>
