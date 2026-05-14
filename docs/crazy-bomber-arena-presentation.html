@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crazy Bomber Arena 발표</title>
+  <style>
+    :root {
+      --bg: #03080e;
+      --bg-2: #0a131e;
+      --panel: rgba(10, 19, 30, 0.72);
+      --panel-soft: rgba(255, 255, 255, 0.035);
+      --line: rgba(255, 255, 255, 0.11);
+      --text: #f4f8ff;
+      --muted: #a0b4cd;
+      --mint: #00f0ff;
+      --mint-soft: rgba(0, 240, 255, 0.15);
+      --gold: #ffbe0b;
+      --red: #ff006e;
+      --red-soft: rgba(255, 0, 110, 0.15);
+      --blue: #3a86ff;
+      --green: #37d67a;
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      --glow: 0 0 22px rgba(0, 240, 255, 0.42);
+      --radius-xl: 32px;
+      --radius-lg: 20px;
+      --slide-pad: clamp(24px, 4vw, 50px);
+      --title-size: clamp(3rem, 5.4vw, 5.8rem);
+      --heading-size: clamp(2rem, 3.2vw, 3.5rem);
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Pretendard Variable", "SUIT Variable", "Apple SD Gothic Neo", Inter, system-ui, sans-serif;
+    }
+    body::before, body::after {
+      content: "";
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.52;
+      animation: drift 20s infinite alternate ease-in-out;
+    }
+    body::before { width: 440px; height: 440px; top: -12%; left: -10%; background: rgba(0, 240, 255, 0.22); }
+    body::after { width: 520px; height: 520px; bottom: -16%; right: -12%; background: rgba(255, 0, 110, 0.18); animation-delay: -10s; }
+    @keyframes drift { from { transform: translate(0,0) scale(1); } to { transform: translate(54px, 48px) scale(1.18); } }
+
+    .deck { position: relative; width: 100vw; height: 100vh; overflow: hidden; z-index: 1; }
+    .slides { display: flex; width: 100%; height: 100%; transition: transform .45s cubic-bezier(.2,.8,.2,1); }
+    .slide { flex: 0 0 100%; min-width: 100%; height: 100%; padding: var(--slide-pad); display: grid; }
+    .frame {
+      position: relative;
+      height: 100%;
+      overflow: hidden;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(20, 30, 45, 0.62), rgba(5, 10, 15, 0.84));
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow: var(--shadow);
+      padding: clamp(30px, 4vw, 54px);
+    }
+    .frame.scroll { overflow-y: auto; }
+    .frame::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(255,255,255,.09) 1px, transparent 1px);
+      background-size: 22px 22px;
+      opacity: .42;
+      pointer-events: none;
+      z-index: -1;
+    }
+    .frame::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent 0 45%, rgba(0,240,255,.055) 50%, transparent 56%);
+      pointer-events: none;
+    }
+    .kicker, .slide-title, .lead, .hero, .grid-2, .grid-3, .grid-4, .flow-grid, .flow-wrap, .hero-tags, .nav, .progress, .dots { position: relative; z-index: 1; }
+
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      padding: 8px 18px;
+      border-radius: 999px;
+      background: var(--mint-soft);
+      border: 1px solid rgba(0, 240, 255, .32);
+      color: var(--mint);
+      font-size: .9rem;
+      font-weight: 850;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      box-shadow: 0 0 10px rgba(0,240,255,.12);
+    }
+    .slide-title { margin: 20px 0 16px; font-size: var(--heading-size); line-height: 1.08; letter-spacing: -.045em; text-shadow: 0 2px 10px rgba(0,0,0,.5); }
+    .lead { margin: 0 0 30px; max-width: 70ch; color: var(--muted); font-size: clamp(1.05rem, 1.35vw, 1.22rem); line-height: 1.65; }
+    strong, .accent { color: var(--mint); }
+
+    .hero { display: grid; grid-template-columns: 1.12fr .88fr; gap: 42px; height: 100%; align-items: center; }
+    .hero-eyebrow { color: var(--mint); font-size: 1.05rem; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; margin-bottom: 16px; text-shadow: var(--glow); }
+    .hero-title { margin: 0; font-size: var(--title-size); line-height: .98; letter-spacing: -.06em; font-weight: 950; }
+    .hero-title strong { color: transparent; -webkit-text-stroke: 2px var(--mint); text-shadow: 0 0 18px rgba(0,240,255,.38); }
+    .hero-subtitle { margin: 22px 0; font-size: clamp(1.35rem, 2vw, 2rem); color: #fff; font-weight: 350; }
+    .hero-message { margin: 0; max-width: 32em; color: var(--muted); font-size: clamp(1.05rem, 1.35vw, 1.2rem); line-height: 1.7; }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+    .pill { display: inline-flex; align-items: center; padding: 10px 18px; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,.035); color: #fff; font-size: .95rem; backdrop-filter: blur(10px); }
+
+    .hero-visual {
+      position: relative;
+      min-height: 470px;
+      height: 100%;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.11);
+      box-shadow: inset 0 0 42px rgba(0,0,0,.5);
+      background: radial-gradient(circle at top right, rgba(0,240,255,.16), transparent 52%), linear-gradient(135deg, #0a1118, #05080c);
+    }
+    .hero-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(0,240,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,240,255,.06) 1px, transparent 1px); background-size: 30px 30px; mask-image: radial-gradient(circle, #000 30%, transparent 82%); }
+    .floating-card, .terminal, .ring, .bomb-orb { position: absolute; border: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(12px); box-shadow: 0 20px 40px rgba(0,0,0,.42); }
+    .floating-card { top: 12%; left: -5%; width: 73%; padding: 24px; border-radius: 22px; background: rgba(10,15,25,.86); animation: float 6s ease-in-out infinite; border-left: 3px solid var(--mint); }
+    .terminal { right: -7%; bottom: 13%; width: 68%; padding: 22px; border-radius: 22px; background: rgba(5,10,15,.9); animation: float 7s ease-in-out infinite reverse; border-left: 3px solid var(--gold); }
+    .ring { left: 12%; bottom: 18%; width: 110px; height: 110px; border-radius: 50%; border: 2px dashed rgba(0,240,255,.32); animation: spin 10s linear infinite; }
+    .bomb-orb { right: 13%; top: 26%; width: 118px; height: 118px; border-radius: 50%; background: radial-gradient(circle at 32% 25%, #fff, #3e4767 22%, #070914 66%); box-shadow: 0 0 50px rgba(0,240,255,.18), 0 28px 70px rgba(0,0,0,.5); }
+    .bomb-orb::before { content:""; position:absolute; right: 5px; top: -12px; width: 42px; height: 18px; border-radius: 999px; background: var(--gold); transform: rotate(22deg); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+    .label { display: inline-block; margin-bottom: 12px; color: var(--gold); font-size: .82rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .floating-card p, .terminal p { margin: 0; color: #eef6ff; line-height: 1.58; }
+    .code-lines { display: grid; gap: 10px; margin-top: 10px; }
+    .code-line { height: 8px; border-radius: 4px; background: rgba(255,255,255,.11); position: relative; overflow: hidden; }
+    .code-line::after { content:""; position:absolute; top:0; left:-100%; width:50%; height:100%; background: linear-gradient(90deg, transparent, rgba(0,240,255,.85), transparent); animation: scan 2s infinite ease-in-out; }
+    .code-line:nth-child(2)::after { animation-delay:.2s; } .code-line:nth-child(3)::after { animation-delay:.4s; }
+    @keyframes scan { to { left: 200%; } }
+
+    .grid-2, .grid-3, .grid-4, .flow-grid { display: grid; gap: 24px; margin-top: 20px; }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .card, .summary-panel, .code-card, .result-card, .compare-card {
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      background: var(--panel-soft);
+      padding: 30px;
+      transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    }
+    .card:hover, .compare-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,.4); border-color: rgba(255,255,255,.3); }
+    .card h3, .summary-panel h3, .code-card h3, .result-card h3, .compare-card h3 { margin: 0 0 12px; font-size: 1.2rem; font-weight: 800; letter-spacing: -.02em; color: #fff; }
+    .card p, .summary-panel p, .code-card p, .result-card p, .compare-card p { margin: 0; color: var(--muted); line-height: 1.65; font-size: 1rem; }
+    .mini-title { display: inline-flex; width: fit-content; margin-bottom: 16px; padding: 6px 12px; border-radius: 7px; font-size: .8rem; font-weight: 850; letter-spacing: .05em; text-transform: uppercase; }
+    .mini-title.good, .mini-title.tip { background: var(--mint-soft); color: var(--mint); border: 1px solid rgba(0,240,255,.3); }
+    .mini-title.bad { background: var(--red-soft); color: var(--red); border: 1px solid rgba(255,0,110,.3); }
+    .compare-card.bad { background: linear-gradient(180deg, rgba(30,10,15,.52), rgba(15,5,10,.82)); border-color: rgba(255,0,110,.24); }
+    .compare-card.good { background: linear-gradient(180deg, rgba(10,30,30,.52), rgba(5,15,15,.82)); border-color: rgba(0,240,255,.24); }
+
+    .bullet-list { display: grid; gap: 14px; margin-top: 18px; }
+    .bullet { display: grid; grid-template-columns: 26px 1fr; align-items: start; color: #eef6ff; line-height: 1.5; }
+    .bullet span:first-child { color: var(--mint); font-weight: 950; }
+    .result-box { display: grid; gap: 12px; margin-top: 16px; }
+    .result-item { padding: 14px 20px; border-radius: 10px; background: rgba(0,0,0,.32); border: 1px solid rgba(255,255,255,.055); color: #fff; font-size: .96rem; }
+    .bad-point { border-left: 4px solid var(--red); }
+    .good-point { border-left: 4px solid var(--mint); }
+    .code-block, .result-block, code.block {
+      display: block;
+      position: relative;
+      margin-top: 16px;
+      padding: 42px 24px 24px;
+      border-radius: 12px;
+      background: #050a10;
+      border: 1px solid rgba(255,255,255,.1);
+      font-family: "D2Coding", "Fira Code", Consolas, monospace;
+      font-size: .95rem;
+      line-height: 1.6;
+      color: #a5d6ff;
+      white-space: pre-wrap;
+      box-shadow: inset 0 2px 10px rgba(0,0,0,.5);
+    }
+    .code-block::before, .result-block::before, code.block::before { content:""; position:absolute; top:14px; left:16px; width:10px; height:10px; border-radius:50%; background:#ff5f56; box-shadow:18px 0 0 #ffbd2e, 36px 0 0 #27c93f; }
+
+    .flow-wrap { margin-top: 34px; }
+    .flow-grid { grid-template-columns: repeat(11, minmax(0, 1fr)); align-items: center; gap: 10px; }
+    .flow-card { min-height: 138px; display: grid; gap: 10px; align-content: start; padding: 20px; background: linear-gradient(145deg,#101928,#0a1018); border-radius: 16px; border: 1px solid var(--line); box-shadow: 0 10px 30px rgba(0,0,0,.3); position: relative; }
+    .flow-card::before { content:""; position:absolute; top:0; left:0; right:0; height:3px; background: var(--mint); border-radius: 16px 16px 0 0; opacity:.55; }
+    .flow-card .step { color: var(--gold); font-size: .78rem; font-weight: 900; letter-spacing:.1em; text-transform:uppercase; }
+    .flow-card strong { color:#fff; font-size:1.05rem; }
+    .flow-card p { margin: 0; color: var(--muted); font-size: .92rem; line-height: 1.45; }
+    .flow-arrow { text-align:center; color: rgba(255,255,255,.22); font-size:1.5rem; }
+    .flow-footer { margin-top: 30px; display: flex; justify-content: center; }
+
+    .game-demo { display:grid; grid-template-columns: 1.05fr .95fr; gap: 28px; align-items:start; }
+    .mock-window { border-radius: 24px; overflow:hidden; background:#11172b; border:1px solid #26324d; box-shadow:0 18px 50px rgba(17,23,43,.34); }
+    .mock-top { display:flex; gap:6px; padding:12px 15px; background:#1a2238; }
+    .dot-light { width:10px; height:10px; border-radius:50%; background:var(--red); } .dot-light:nth-child(2){ background:var(--gold);} .dot-light:nth-child(3){ background:var(--green);}
+    .arena { display:grid; grid-template-columns: repeat(13, 1fr); gap:3px; padding:14px; }
+    .tile { aspect-ratio:1; border-radius:5px; background:#203a63; }
+    .tile:nth-child(odd){ background:#27456f; } .wall{ background:#7282aa!important;} .box{ background:#c6813f!important;} .player{ background:var(--mint)!important; border-radius:50%; box-shadow:0 0 0 3px white inset;} .enemy{ background:var(--red)!important; border-radius:50%;} .boom{ background:var(--gold)!important; box-shadow:0 0 16px #ff8c3f;}
+    .big-link { padding: 24px; border-radius: 20px; background: linear-gradient(135deg, rgba(0,240,255,.12), rgba(255,190,11,.1)); border: 1px solid var(--line); font-size: 1.28rem; color: #fff; font-weight: 900; word-break: break-all; }
+
+    .progress { position: fixed; top:0; left:0; width:100%; height:4px; background: rgba(255,255,255,.05); z-index:12; }
+    .progress-bar { width:0; height:100%; background: linear-gradient(90deg, var(--blue), var(--mint), var(--gold)); box-shadow: 0 0 10px var(--mint); }
+    .nav { position: fixed; left:50%; bottom:30px; transform:translateX(-50%); display:flex; align-items:center; gap:16px; padding:12px 24px; border-radius:999px; border:1px solid rgba(255,255,255,.1); background:rgba(5,10,15,.82); backdrop-filter:blur(20px); z-index:11; box-shadow:var(--shadow); }
+    .nav button { appearance:none; border:none; cursor:pointer; width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,.055); color:#fff; font-size:1.2rem; display:flex; align-items:center; justify-content:center; }
+    .nav button:hover:not(:disabled){ background:var(--mint-soft); color:var(--mint); transform:scale(1.1); box-shadow:0 0 15px rgba(0,240,255,.3); }
+    .nav button:disabled{ opacity:.3; cursor:not-allowed; }
+    .counter { min-width:80px; text-align:center; color:#fff; font-weight:700; letter-spacing:.1em; font-variant-numeric: tabular-nums; }
+    .dots { position:fixed; right:30px; top:50%; transform:translateY(-50%); display:grid; gap:12px; z-index:11; }
+    .dot { appearance:none; border:none; cursor:pointer; width:8px; height:8px; padding:0; border-radius:50%; background:rgba(255,255,255,.22); transition: all .25s ease; }
+    .dot.active { height:24px; border-radius:4px; background:var(--mint); box-shadow:var(--glow); }
+
+    @media print {
+      @page { size: 16in 9in; margin: 0; }
+      html, body { overflow: visible; height: auto; background: var(--bg); }
+      body::before, body::after, .nav, .dots, .progress { display: none; }
+      .deck { width: 16in; height: auto; overflow: visible; }
+      .slides { display: block; transform: none !important; }
+      .slide { width: 16in; height: 9in; min-width: 16in; page-break-after: always; padding: 34px; }
+      .frame { box-shadow: none; }
+    }
+    @media (max-width: 1200px) {
+      body { overflow: auto; }
+      body::before, body::after { display:none; }
+      .deck { height:auto; min-height:100vh; }
+      .slides { display:block; transform:none!important; }
+      .slide { height:auto; min-height:100vh; padding:20px; }
+      .frame { padding:30px 20px; overflow-y:auto; }
+      .hero, .grid-2, .grid-3, .grid-4, .game-demo, .flow-grid { grid-template-columns: 1fr; }
+      .flow-arrow { transform: rotate(90deg); margin: 8px 0; }
+      .nav, .dots, .progress { display:none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" aria-hidden="true"><div class="progress-bar" id="progressBar"></div></div>
+  <main class="deck" aria-label="Crazy Bomber Arena 발표 슬라이드">
+    <section class="slides" id="slides">
+
+      <article class="slide">
+        <div class="frame">
+          <div class="hero">
+            <div>
+              <div class="hero-eyebrow">Realtime Arcade Project</div>
+              <h1 class="hero-title">Crazy<br><strong>Bomber</strong><br>Arena</h1>
+              <p class="hero-subtitle">방 코드로 붙는 실시간 온라인 폭탄 대전</p>
+              <p class="hero-message">크레이지 아케이드에서 영감을 받아 만든 웹 기반 멀티플레이 게임입니다. 발표 중에는 솔로 봇 테스트로 바로 시연하고, 친구들은 방 코드로 접속할 수 있습니다.</p>
+              <div class="hero-tags"><span class="pill">Socket.IO</span><span class="pill">Node.js</span><span class="pill">Canvas Game</span><span class="pill">Solo AI Bots</span></div>
+            </div>
+            <div class="hero-visual" aria-hidden="true">
+              <div class="hero-grid"></div><div class="bomb-orb"></div><div class="ring"></div>
+              <div class="floating-card"><span class="label">Room Code</span><p>친구에게 URL과 4자리 방 코드를 공유하면 같은 맵에서 즉시 대전.</p></div>
+              <div class="terminal"><span class="label">Game Loop</span><div class="code-lines"><div class="code-line"></div><div class="code-line"></div><div class="code-line" style="width:72%"></div><div class="code-line" style="width:88%"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="slide"><div class="frame">
+        <div class="kicker">Part 1 / Concept</div>
+        <h2 class="slide-title">발표용 프로젝트로 왜 게임인가?</h2>
+        <p class="lead">좋은 발표용 프로젝트는 보는 사람이 바로 이해하고, 직접 해보고 싶고, 기술 설명까지 자연스럽게 이어져야 합니다.</p>
+        <div class="grid-4">
+          <div class="card"><span class="mini-title good">몰입</span><h3>보자마자 이해됨</h3><p>이동, 폭탄, 폭발, 승리라는 규칙이 직관적입니다.</p></div>
+          <div class="card"><span class="mini-title tip">시연</span><h3>분위기가 살아남</h3><p>친구가 직접 들어오면 발표가 그냥 설명이 아니라 이벤트가 됩니다.</p></div>
+          <div class="card"><span class="mini-title good">기술</span><h3>설명할 게 많음</h3><p>실시간 통신, 서버 상태관리, Canvas 렌더링을 한 번에 보여줍니다.</p></div>
+          <div class="card"><span class="mini-title tip">안전</span><h3>솔로 모드 가능</h3><p>네트워크나 인원 문제가 있어도 봇 상대로 바로 시연할 수 있습니다.</p></div>
+        </div>
+      </div></article>
+
+      <article class="slide"><div class="frame">
+        <div class="kicker">Part 2 / Gameplay</div>
+        <h2 class="slide-title">게임 규칙은 단순하지만, 시연은 강하다</h2>
+        <div class="game-demo">
+          <div class="mock-window"><div class="mock-top"><i class="dot-light"></i><i class="dot-light"></i><i class="dot-light"></i></div><div class="arena" id="arenaMock"></div></div>
+          <div class="grid-2" style="grid-template-columns:1fr; margin-top:0">
+            <div class="summary-panel"><span class="mini-title good">Rules</span><h3>기본 규칙</h3><div class="bullet-list"><div class="bullet"><span>1</span><span>이동하면서 폭탄을 설치한다</span></div><div class="bullet"><span>2</span><span>폭탄은 십자 방향으로 터진다</span></div><div class="bullet"><span>3</span><span>블록을 부수고 상대를 압박한다</span></div><div class="bullet"><span>4</span><span>마지막까지 살아남으면 승리</span></div></div></div>
+            <div class="summary-panel"><span class="mini-title tip">Controls</span><h3>조작</h3><div class="result-box"><div class="result-item good-point">WASD / 방향키: 이동</div><div class="result-item good-point">Space: 폭탄 설치</div><div class="result-item good-point">모바일: 화면 버튼 지원</div></div></div>
+          </div>
+        </div>
+      </div></article>
+
+      <article class="slide"><div class="frame">
+        <div class="kicker">Part 3 / Architecture</div>
+        <h2 class="slide-title">핵심 구조: 클라이언트는 입력, 서버는 판정</h2>
+        <p class="lead">여러 사람이 같은 게임을 보려면 각자 브라우저가 마음대로 판정하면 안 됩니다. 그래서 서버가 authoritative하게 상태를 관리합니다.</p>
+        <div class="flow-wrap"><div class="flow-grid">
+          <div class="flow-card"><span class="step">Step 1</span><strong>Input</strong><p>키보드/모바일 입력</p></div><div class="flow-arrow">→</div>
+          <div class="flow-card"><span class="step">Step 2</span><strong>Socket.IO</strong><p>입력을 서버로 전송</p></div><div class="flow-arrow">→</div>
+          <div class="flow-card"><span class="step">Step 3</span><strong>Server Tick</strong><p>이동·폭탄·충돌 계산</p></div><div class="flow-arrow">→</div>
+          <div class="flow-card"><span class="step">Step 4</span><strong>Broadcast</strong><p>전체 상태 동기화</p></div><div class="flow-arrow">→</div>
+          <div class="flow-card" style="border-color:var(--mint); box-shadow:var(--glow)"><span class="step" style="color:var(--mint)">Step 5</span><strong>Render</strong><p>Canvas에 그리기</p></div>
+        </div><div class="flow-footer"><span class="pill">client input → server game loop → broadcast state → canvas render</span></div></div>
+      </div></article>
+
+      <article class="slide"><div class="frame">
+        <div class="kicker">Part 4 / Features</div>
+        <h2 class="slide-title">구현한 기능</h2>
+        <div class="grid-3">
+          <div class="card"><span class="mini-title good">Online</span><h3>방 코드 대전</h3><p>방을 만들면 4자리 코드가 생성되고, 친구는 같은 URL에서 코드로 입장합니다.</p></div>
+          <div class="card"><span class="mini-title tip">Battle</span><h3>폭탄/폭발/블록</h3><p>타이머 폭탄, 십자 폭발, 블록 파괴, 연쇄 폭발을 구현했습니다.</p></div>
+          <div class="card"><span class="mini-title good">Solo</span><h3>AI 봇 테스트</h3><p>봇이 이동하고, 위험 지역을 피하고, 안전할 때 폭탄을 설치합니다.</p></div>
+          <div class="card"><span class="mini-title tip">Mobile</span><h3>터치 조작</h3><p>노트북이 없어도 휴대폰에서 방향키와 폭탄 버튼으로 플레이할 수 있습니다.</p></div>
+          <div class="card"><span class="mini-title good">Deploy</span><h3>리눅스 서버 실행</h3><p>현재 서버에서 Node.js로 실행 중이고, 포트포워딩 후 외부 접속이 가능합니다.</p></div>
+          <div class="card"><span class="mini-title tip">Polish</span><h3>발표 안정성</h3><p>헬스체크, Dockerfile, Render 설정, 초대 문구 복사까지 포함했습니다.</p></div>
+        </div>
+      </div></article>
+
+      <article class="slide"><div class="frame">
+        <div class="kicker">Part 5 / Debug Story</div>
+        <h2 class="slide-title">개발 중 발견한 버그와 해결</h2>
+        <div class="grid-2">
+          <div class="compare-card bad"><span class="mini-title bad">Bug 1</span><h3>폭탄이 다른 칸에 설치됨</h3><p>캐릭터가 오른쪽 아래에 걸치면 폭탄도 오른쪽 아래 타일에 찍히는 문제가 있었습니다.</p><code class="block">기존: Math.floor((px + TILE / 2) / TILE)
+수정: Math.floor(px / TILE)</code></div>
+          <div class="compare-card good"><span class="mini-title good">Fix 1</span><h3>현재 서 있는 타일 기준으로 수정</h3><p>타일 계산에서 불필요한 보정을 제거해서 폭탄이 플레이어 위치에 정확히 설치되게 했습니다.</p><div class="result-box"><div class="result-item good-point">중심 기준 좌표 계산 정리</div><div class="result-item good-point">발표 전 직접 플레이하면서 검증</div></div></div>
+          <div class="compare-card bad"><span class="mini-title bad">Bug 2</span><h3>봇이 자꾸 자살함</h3><p>봇이 폭탄을 놓은 뒤 탈출 가능한 경로가 있는지 확인하지 않았습니다.</p></div>
+          <div class="compare-card good"><span class="mini-title good">Fix 2</span><h3>탈출 경로 검사 추가</h3><p>폭탄 설치 전 BFS로 안전한 탈출 칸을 검사하고, 위험 지역에서는 회피 판단을 더 자주 하게 만들었습니다.</p></div>
+        </div>
+      </div></article>
+
+      <article class="slide"><div class="frame">
+        <div class="kicker">Part 6 / Demo Plan</div>
+        <h2 class="slide-title">발표 시연 순서</h2>
+        <div class="flow-wrap"><div class="flow-grid">
+          <div class="flow-card"><span class="step">1</span><strong>로비</strong><p>디자인과 버튼 소개</p></div><div class="flow-arrow">→</div>
+          <div class="flow-card"><span class="step">2</span><strong>Solo</strong><p>봇과 즉시 플레이</p></div><div class="flow-arrow">→</div>
+          <div class="flow-card"><span class="step">3</span><strong>Bomb</strong><p>폭탄/블록 파괴 시연</p></div><div class="flow-arrow">→</div>
+          <div class="flow-card"><span class="step">4</span><strong>Online</strong><p>친구가 방 코드 입장</p></div><div class="flow-arrow">→</div>
+          <div class="flow-card"><span class="step">5</span><strong>Tech</strong><p>서버 구조 설명</p></div>
+        </div></div>
+        <div class="grid-2"><div class="summary-panel"><span class="mini-title tip">멘트 예시</span><h3>이렇게 말하면 깔끔함</h3><p>“이 게임은 브라우저가 직접 승패를 판정하지 않고, 서버가 매 tick마다 게임 상태를 계산해서 모든 유저에게 뿌립니다.”</p></div><div class="summary-panel"><span class="mini-title good">비상 플랜</span><h3>접속이 불안하면?</h3><p>솔로 테스트 버튼 하나로 봇 2명과 바로 전투를 보여주면 됩니다.</p></div></div>
+      </div></article>
+
+      <article class="slide"><div class="frame">
+        <div class="kicker">Part 7 / How to Join</div>
+        <h2 class="slide-title">접속 방법</h2>
+        <p class="lead">같은 네트워크에서는 내부 IP로 접속하고, 외부 발표용은 공유기 포트포워딩 또는 도메인 연결을 사용합니다.</p>
+        <div class="grid-2">
+          <div class="summary-panel"><span class="mini-title good">Local</span><h3>같은 와이파이</h3><div class="big-link">http://192.168.0.4:3000</div><div class="result-box"><div class="result-item good-point">3000번 포트가 게임 서버</div><div class="result-item bad-point">80번은 AdGuardHome이 사용 중</div></div></div>
+          <div class="summary-panel"><span class="mini-title tip">Online</span><h3>외부 접속</h3><div class="big-link">http://도메인:3000</div><div class="result-box"><div class="result-item good-point">외부 3000 → 192.168.0.4:3000 TCP 포트포워딩</div><div class="result-item good-point">방 코드 공유 후 친구 입장</div></div></div>
+        </div>
+      </div></article>
+
+      <article class="slide"><div class="frame">
+        <div class="kicker">Final</div>
+        <h2 class="slide-title">마무리: 작은 게임 안에 들어간 진짜 기술</h2>
+        <div class="grid-3">
+          <div class="card"><span class="mini-title tip">Realtime</span><h3>실시간 통신</h3><p>Socket.IO로 여러 브라우저가 같은 상태를 공유합니다.</p></div>
+          <div class="card"><span class="mini-title good">Game Loop</span><h3>서버 게임 루프</h3><p>매 tick마다 이동, 폭탄, 폭발, 승패를 계산합니다.</p></div>
+          <div class="card"><span class="mini-title tip">Iteration</span><h3>디버깅 경험</h3><p>폭탄 위치, 이동 속도, 봇 자살 문제를 직접 발견하고 수정했습니다.</p></div>
+        </div>
+        <div class="flow-footer"><span class="pill" style="font-size:1.2rem; padding:15px 30px; font-weight:900; background:rgba(0,240,255,.12); border-color:var(--mint)">오늘 보여줄 한 문장: 웹에서도 충분히 온라인 게임을 만들 수 있다</span></div>
+      </div></article>
+    </section>
+  </main>
+
+  <div class="dots" id="dots" aria-label="슬라이드 이동"></div>
+  <div class="nav" aria-label="프레젠테이션 탐색">
+    <button id="prevBtn" type="button" aria-label="이전 슬라이드">‹</button>
+    <div class="counter" id="counter">1 / 9</div>
+    <button id="nextBtn" type="button" aria-label="다음 슬라이드">›</button>
+  </div>
+
+  <script>
+    const slides = document.getElementById('slides');
+    const slideItems = Array.from(document.querySelectorAll('.slide'));
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const counter = document.getElementById('counter');
+    const progressBar = document.getElementById('progressBar');
+    const dots = document.getElementById('dots');
+    let currentIndex = 0;
+
+    const arena = document.getElementById('arenaMock');
+    if (arena) {
+      const special = new Map([[0,'wall'],[1,'wall'],[2,'wall'],[3,'wall'],[4,'wall'],[5,'wall'],[6,'wall'],[7,'wall'],[8,'wall'],[9,'wall'],[10,'wall'],[11,'wall'],[12,'wall'],[13,'wall'],[25,'wall'],[26,'wall'],[38,'wall'],[39,'wall'],[51,'wall'],[52,'wall'],[64,'wall'],[65,'wall'],[77,'wall'],[78,'wall'],[90,'wall'],[91,'wall'],[92,'wall'],[93,'wall'],[94,'wall'],[95,'wall'],[96,'wall'],[97,'wall'],[98,'wall'],[99,'wall'],[100,'wall'],[101,'wall'],[102,'wall'],[103,'wall'],[104,'wall'],[14,'player'],[24,'enemy'],[17,'box'],[20,'box'],[40,'box'],[47,'box'],[55,'boom'],[56,'boom'],[57,'boom'],[58,'boom'],[72,'box']]);
+      for (let i = 0; i < 105; i++) {
+        const cell = document.createElement('i');
+        cell.className = `tile ${special.get(i) || ''}`;
+        arena.appendChild(cell);
+      }
+    }
+
+    slideItems.forEach((_, index) => {
+      const dot = document.createElement('button');
+      dot.className = 'dot';
+      dot.type = 'button';
+      dot.ariaLabel = `${index + 1}번 슬라이드`;
+      dot.addEventListener('click', () => goToSlide(index));
+      dots.appendChild(dot);
+    });
+    function updateUI() {
+      slides.style.transform = `translateX(-${currentIndex * 100}%)`;
+      counter.textContent = `${currentIndex + 1} / ${slideItems.length}`;
+      progressBar.style.width = `${((currentIndex + 1) / slideItems.length) * 100}%`;
+      prevBtn.disabled = currentIndex === 0;
+      nextBtn.disabled = currentIndex === slideItems.length - 1;
+      Array.from(dots.children).forEach((dot, index) => dot.classList.toggle('active', index === currentIndex));
+    }
+    function goToSlide(index) {
+      currentIndex = Math.max(0, Math.min(index, slideItems.length - 1));
+      updateUI();
+    }
+    prevBtn.addEventListener('click', () => goToSlide(currentIndex - 1));
+    nextBtn.addEventListener('click', () => goToSlide(currentIndex + 1));
+    window.addEventListener('keydown', (event) => {
+      if (window.innerWidth <= 1200) return;
+      if (event.key === 'ArrowRight' || event.key === 'PageDown' || event.key === ' ') { event.preventDefault(); goToSlide(currentIndex + 1); }
+      if (event.key === 'ArrowLeft' || event.key === 'PageUp') { event.preventDefault(); goToSlide(currentIndex - 1); }
+      if (event.key === 'Home') goToSlide(0);
+      if (event.key === 'End') goToSlide(slideItems.length - 1);
+    });
+    updateUI();
+  </script>
+</body>
+</html>
