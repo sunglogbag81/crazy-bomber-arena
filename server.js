@@ -99,7 +99,7 @@ function publicRoom(room) {
   };
 }
 
-function tileAtPixel(v) { return Math.floor((v + TILE / 2) / TILE); }
+function tileAtPixel(v) { return Math.floor(v / TILE); }
 function centerOf(tile) { return tile * TILE + TILE / 2; }
 function playerTile(p) { return { x: tileAtPixel(p.px), y: tileAtPixel(p.py) }; }
 function isBlocked(room, x, y, ignoreBombForPlayer = null) {
@@ -138,7 +138,7 @@ function addPlayerCore(room, id, name, bot) {
     py: centerOf(s.y),
     hp: 3,
     alive: true,
-    speed: bot ? 2.6 : 3.05,
+    speed: bot ? 3.15 : 4.15,
     range: 2,
     maxBombs: 1,
     input: { up: false, down: false, left: false, right: false },
