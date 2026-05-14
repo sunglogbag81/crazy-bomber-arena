@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crazy Bomber Arena</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <p class="eyebrow">ONLINE BOMB BATTLE</p>
+      <h1>Crazy Bomber Arena</h1>
+      <p class="subtitle">방 코드를 공유해서 친구랑 바로 붙는 실시간 폭탄 대전</p>
+    </section>
+
+    <section id="lobby" class="panel lobby">
+      <label>닉네임
+        <input id="name" maxlength="14" placeholder="기장" autocomplete="off" />
+      </label>
+      <div class="row">
+        <button id="create">방 만들기</button>
+        <input id="code" maxlength="4" placeholder="방 코드" autocomplete="off" />
+        <button id="join" class="secondary">입장</button>
+      </div>
+      <p class="hint">조작: WASD/방향키 이동 · Space 폭탄 · 모바일은 화면 버튼</p>
+    </section>
+
+    <section id="game" class="game hidden">
+      <div class="topbar panel">
+        <div><strong>방 코드</strong> <button id="roomCode" class="code">----</button></div>
+        <div id="status">대기 중</div>
+      </div>
+      <canvas id="arena" width="600" height="520"></canvas>
+      <div id="players" class="players"></div>
+      <div class="mobile-controls panel">
+        <div class="dpad">
+          <button data-key="up">▲</button>
+          <button data-key="left">◀</button>
+          <button data-key="down">▼</button>
+          <button data-key="right">▶</button>
+        </div>
+        <button id="mobileBomb" class="bomb-button">💣</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
