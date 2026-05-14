@@ -1,13 +1,14 @@
 {
   "name": "crazy-bomber-arena",
   "version": "1.0.0",
-  "description": "A browser-based online bomber arena inspired by classic arcade bomb battles.",
+  "description": "A deployable real-time online bomber arena with solo bot test mode.",
   "main": "server.js",
   "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "check": "node --check server.js"
+    "check": "node --check server.js",
+    "health": "node -e \"fetch('http://localhost:3000/healthz').then(r=>r.json()).then(console.log)\""
   },
   "dependencies": {
     "express": "^4.19.2",
@@ -16,5 +17,8 @@
   "engines": {
     "node": ">=18"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "socket.io-client": "^4.8.3"
+  }
 }

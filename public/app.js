@@ -16,6 +16,7 @@ const keyMap = {
 };
 
 $('create').onclick = () => socket.emit('createRoom', { name: nameValue() }, enterRoom);
+$('solo').onclick = () => socket.emit('soloRoom', { name: nameValue(), bots: 2 }, enterRoom);
 $('join').onclick = () => socket.emit('joinRoom', { code: $('code').value.trim(), name: nameValue() }, enterRoom);
 $('roomCode').onclick = async () => {
   if (!state?.code) return;
@@ -24,6 +25,7 @@ $('roomCode').onclick = async () => {
   setTimeout(() => $('roomCode').textContent = state.code, 800);
 };
 $('mobileBomb').onclick = () => socket.emit('bomb');
+$('copyInvite').onclick = copyInvite;
 
 function nameValue() {
   return $('name').value.trim() || `Player${Math.floor(Math.random() * 90 + 10)}`;
@@ -35,8 +37,20 @@ function enterRoom(res) {
   lobby.classList.add('hidden');
   game.classList.remove('hidden');
   $('roomCode').textContent = state.code;
+  history.replaceState(null, '', `${location.pathname}?room=${state.code}`);
   render();
 }
+function copyInvite() {
+  if (!state?.code) return;
+  const url = `${location.origin}${location.pathname}?room=${state.code}`;
+  const text = `Crazy Bomber Arena 같이 하자!\nURL: ${url}\n방 코드: ${state.code}`;
+  navigator.clipboard?.writeText(text).then(() => {
+    $('copyInvite').textContent = '복사됨';
+    setTimeout(() => $('copyInvite').textContent = '초대 문구 복사', 900);
+  }).catch(() => alert(text));
+}
+const roomFromUrl = new URLSearchParams(location.search).get('room');
+if (roomFromUrl) $('code').value = roomFromUrl.toUpperCase();
 
 window.addEventListener('keydown', (e) => {
   if (e.code === 'Space') { e.preventDefault(); socket.emit('bomb'); return; }
@@ -88,16 +102,22 @@ function drawBoard() {
     for (let x = 0; x < board[y].length; x++) {
       const px = x * tile;
       const py = y * tile;
-      ctx.fillStyle = (x + y) % 2 ? '#24375c' : '#1f3153';
+      const g = ctx.createLinearGradient(px, py, px + tile, py + tile);
+      g.addColorStop(0, (x + y) % 2 ? '#27456f' : '#203a63');
+      g.addColorStop(1, (x + y) % 2 ? '#1b3155' : '#182b4c');
+      ctx.fillStyle = g;
       ctx.fillRect(px, py, tile, tile);
       if (board[y][x] === 'wall') {
-        ctx.fillStyle = '#6c7899';
+        ctx.fillStyle = '#7282aa';
         roundRect(px + 4, py + 4, tile - 8, tile - 8, 8, true);
         ctx.fillStyle = 'rgba(255,255,255,.16)';
         ctx.fillRect(px + 8, py + 8, tile - 16, 5);
       }
       if (board[y][x] === 'crate') {
-        ctx.fillStyle = '#b8793a';
+        const box = ctx.createLinearGradient(px, py, px, py + tile);
+        box.addColorStop(0, '#d99a4c');
+        box.addColorStop(1, '#8d552a');
+        ctx.fillStyle = box;
         roundRect(px + 5, py + 5, tile - 10, tile - 10, 7, true);
         ctx.strokeStyle = 'rgba(70,30,10,.5)';
         ctx.lineWidth = 3;
@@ -134,8 +154,13 @@ function drawBlasts() {
 function drawPlayers() {
   for (const p of state.players) {
     ctx.globalAlpha = p.alive ? 1 : .35;
-    ctx.fillStyle = p.color;
+    const body = ctx.createRadialGradient(p.px - 5, p.py - 7, 2, p.px, p.py, 18);
+    body.addColorStop(0, '#ffffff');
+    body.addColorStop(.22, p.color);
+    body.addColorStop(1, '#26324d');
+    ctx.fillStyle = body;
     ctx.beginPath(); ctx.arc(p.px, p.py, 15, 0, Math.PI * 2); ctx.fill();
+    if (p.bot) { ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.font = '900 10px system-ui'; ctx.textAlign = 'center'; ctx.fillText('AI', p.px, p.py + 5); }
     ctx.fillStyle = '#10121f';
     ctx.beginPath(); ctx.arc(p.px - 5, p.py - 4, 2.3, 0, Math.PI * 2); ctx.arc(p.px + 5, p.py - 4, 2.3, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = 'white';
@@ -150,7 +175,7 @@ function drawPlayers() {
   }
 }
 function drawOverlay() {
-  if (state.status === 'waiting') centeredText('친구가 들어오면 게임 시작!', '방 코드를 공유하세요');
+  if (state.status === 'waiting') centeredText('친구가 들어오면 게임 시작!', '초대 문구를 복사해서 공유하세요');
   if (state.status === 'roundOver') centeredText(`${state.winner} 승리!`, '잠시 후 다음 라운드');
 }
 function centeredText(title, sub) {
@@ -162,10 +187,10 @@ function centeredText(title, sub) {
 }
 function renderHud() {
   const alive = state.players.filter(p => p.alive).length;
-  $('status').textContent = state.status === 'playing' ? `전투 중 · 생존 ${alive}` : state.status === 'roundOver' ? `${state.winner} 승리` : `대기 중 · ${state.players.length}/${state.maxPlayers}`;
+  $('status').textContent = state.status === 'playing' ? `${state.solo ? '솔로 테스트' : '온라인 대전'} · 생존 ${alive}` : state.status === 'roundOver' ? `${state.winner} 승리` : `대기 중 · ${state.players.length}/${state.maxPlayers}`;
   $('players').innerHTML = state.players.map(p => `
     <div class="player-card ${p.alive ? '' : 'dead'}">
-      <span><span style="color:${p.color}">●</span> ${escapeHtml(p.name)}${p.id === myId ? ' (나)' : ''}</span>
+      <span><span style="color:${p.color}">●</span> ${escapeHtml(p.name)}${p.id === myId ? ' (나)' : p.bot ? ' 🤖' : ''}</span>
       <strong>${'❤'.repeat(Math.max(0, p.hp))}</strong>
     </div>`).join('');
 }

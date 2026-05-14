@@ -7,19 +7,31 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="bg-orb orb-a"></div>
+  <div class="bg-orb orb-b"></div>
   <main class="shell">
     <section class="hero">
-      <p class="eyebrow">ONLINE BOMB BATTLE</p>
-      <h1>Crazy Bomber Arena</h1>
-      <p class="subtitle">방 코드를 공유해서 친구랑 바로 붙는 실시간 폭탄 대전</p>
+      <p class="eyebrow">REALTIME ONLINE BOMB BATTLE</p>
+      <h1><span>Crazy</span> Bomber Arena</h1>
+      <p class="subtitle">방 코드 하나로 온라인 대전 · 혼자서는 봇 상대로 바로 테스트</p>
     </section>
 
     <section id="lobby" class="panel lobby">
+      <div class="card-title">
+        <span class="logo-bomb">💣</span>
+        <div>
+          <h2>입장 준비</h2>
+          <p>발표 때는 “솔로 테스트”로 바로 시연하고, 배포 후에는 친구에게 URL과 방 코드를 공유하면 돼.</p>
+        </div>
+      </div>
       <label>닉네임
         <input id="name" maxlength="14" placeholder="기장" autocomplete="off" />
       </label>
-      <div class="row">
-        <button id="create">방 만들기</button>
+      <div class="actions">
+        <button id="create">온라인 방 만들기</button>
+        <button id="solo" class="solo">솔로 테스트</button>
+      </div>
+      <div class="join-row">
         <input id="code" maxlength="4" placeholder="방 코드" autocomplete="off" />
         <button id="join" class="secondary">입장</button>
       </div>
@@ -28,8 +40,9 @@
 
     <section id="game" class="game hidden">
       <div class="topbar panel">
-        <div><strong>방 코드</strong> <button id="roomCode" class="code">----</button></div>
-        <div id="status">대기 중</div>
+        <div class="room-pill"><strong>방 코드</strong> <button id="roomCode" class="code">----</button></div>
+        <div id="status" class="status-badge">대기 중</div>
+        <button id="copyInvite" class="ghost">초대 문구 복사</button>
       </div>
       <canvas id="arena" width="600" height="520"></canvas>
       <div id="players" class="players"></div>
